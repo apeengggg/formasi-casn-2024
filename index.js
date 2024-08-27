@@ -4,12 +4,19 @@ const ExcelJS = require('exceljs');
 
 const app = express();
 const port = 3000;
+const path = require('path');
 
-// Route to get data from another API
-app.get('/scrapping-casn-formation', async (req, res) => {
+app.set('view engine', 'ejs');
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', async (req, res) => {
+    res.render('index');
+});
+
+app.get('/download', async (req, res) => {
     try {
-        const pendidikan = req.query.pendidikan
-        const apiUrl = 'https://api-sscasn.bkn.go.id/2024/portal/spf?kode_ref_pend='+pendidikan+'&offset='; // Replace with the actual API URL
+        const apiUrl = 'https://api-sscasn.bkn.go.id/2024/portal/spf?kode_ref_pend='+req.query.kode_pend+'&offset='; // Replace with the actual API URL
         var offset = 0
         const url = apiUrl+offset
 
@@ -24,7 +31,7 @@ app.get('/scrapping-casn-formation', async (req, res) => {
         const totalData = data.meta.total
         
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Data-Casn'+pendidikan);
+        const worksheet = workbook.addWorksheet('Data-Casn'+req.query.kode_pend);
 
         worksheet.columns = [
             { header: 'Nama Instansi', key: 'ins_nm', width: 40 },
@@ -39,7 +46,7 @@ app.get('/scrapping-casn-formation', async (req, res) => {
 
         worksheet.getRow(1).font = { bold: true, size: 16 };
 
-        for(let i=0; i<=totalData; i+=10){
+        for(let i=0; i<=20; i+=10){
             var dynamicUrl = apiUrl+i
             const response = await axios.get(dynamicUrl, {
                 headers: {
@@ -47,22 +54,24 @@ app.get('/scrapping-casn-formation', async (req, res) => {
                 }
             });
 
-            const data = JSON.parse(JSON.stringify(response.data.data.data))
+            const data = JSON.parse(JSON.stringify(response.data.data.data)) || []
 
-            for(let j=0; j<data.length; j++){
-                worksheet.addRow({
-                    ins_nm: data[j].ins_nm,
-                    JP: data[j].jp_nama,
-                    formasi_nm: data[j].formasi_nm,
-                    jabatan_nm: data[j].jabatan_nm,
-                    lokasi_nm: data[j].lokasi_nm,
-                    jumlah_formasi: data[j].jumlah_formasi,
-                    gaji_min: data[j].gaji_min,
-                    gaji_max: data[j].gaji_max
-                });
+            if(data.length > 0){
+                for(let j=0; j<data.length; j++){
+                    worksheet.addRow({
+                        ins_nm: data[j].ins_nm,
+                        JP: data[j].jp_nama,
+                        formasi_nm: data[j].formasi_nm,
+                        jabatan_nm: data[j].jabatan_nm,
+                        lokasi_nm: data[j].lokasi_nm,
+                        jumlah_formasi: data[j].jumlah_formasi,
+                        gaji_min: data[j].gaji_min,
+                        gaji_max: data[j].gaji_max
+                    });
+                }
             }
 
-            console.log('Success Get Data-Casn-Pendidikan-'+pendidikan+'-Page-'+(i/10+1))
+            console.log('Success Get Data-Casn-Pendidikan-'+req.query.kode_pend+'-Page-'+(i/10+1))
         }
 
         // Set the response headers to force download the Excel file
@@ -72,7 +81,7 @@ app.get('/scrapping-casn-formation', async (req, res) => {
         );
         res.setHeader(
             'Content-Disposition',
-            'attachment; filename=' + 'Data-Casn-'+pendidikan+'.xlsx'
+            'attachment; filename=' + 'Data-Casn-'+req.query.kode_pend+'.xlsx'
         );
 
         // Write the workbook to the response stream
