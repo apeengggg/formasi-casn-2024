@@ -24,7 +24,7 @@ app.get('/scrapping-casn-formation', async (req, res) => {
         const totalData = data.meta.total
         
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Data-Casn');
+        const worksheet = workbook.addWorksheet('Data-Casn'+pendidikan);
 
         worksheet.columns = [
             { header: 'Nama Instansi', key: 'ins_nm', width: 40 },
@@ -33,8 +33,8 @@ app.get('/scrapping-casn-formation', async (req, res) => {
             { header: 'Jabatan', key: 'jabatan_nm', width: 55 },
             { header: 'Lokasi', key: 'lokasi_nm', width: 150 },
             { header: 'Jumlah Formasi', key: 'jumlah_formasi', width: 10 },
-            { header: 'Gaji Minimal', key: 'gaji_min', width: 15 },
-            { header: 'Gaji Maximal', key: 'gaji_max', width: 15 },
+            { header: 'Gaji Minimal', key: 'gaji_min', width: 15, style: { numFmt: 'Rp #,##0' } },
+            { header: 'Gaji Maximal', key: 'gaji_max', width: 15, style: { numFmt: 'Rp #,##0' } },
         ];
 
         worksheet.getRow(1).font = { bold: true, size: 16 };
@@ -72,7 +72,7 @@ app.get('/scrapping-casn-formation', async (req, res) => {
         );
         res.setHeader(
             'Content-Disposition',
-            'attachment; filename=' + 'Data-Casn.xlsx'
+            'attachment; filename=' + 'Data-Casn-'+pendidikan+'.xlsx'
         );
 
         // Write the workbook to the response stream
