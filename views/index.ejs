@@ -12,6 +12,9 @@
             <div class="col-12">
                 <!-- <form method="GET" action="/download"> -->
                     <label for="kode_pend">Download Formasi CASN</label>
+                    <div class="spinner-border mt-2 mb-2" role="status" id="loading" style="display:none;">
+                        <span class="sr-only">Loading...</span>
+                    </div>
                     <input class="form-control" type="text" name="kode_pend" id="kode_pend" placeholder="Kode Pendidikan..." value="<%= searchQuery %>">
                     <button class="btn btn-primary mt-2" id="download-excel" type="submit">Download</button>
                 <!-- </form> -->
@@ -26,6 +29,9 @@
 </body>
 <script>
     document.getElementById('download-excel').addEventListener('click', function() {
+        var spinner = document.getElementById('loading')
+        spinner.style.display = 'block'
+
         const kode_pendidikan = document.getElementById('kode_pend').value;
         if(kode_pendidikan === ''){
             return alert('Kode Pendidikan Harus Di Isi')
@@ -33,6 +39,12 @@
 
         fetch('/download?kode_pend='+kode_pendidikan)
             .then(response => {
+                spinner.style.display = 'block';
+                if(response.status == 404){
+                    spinner.style.display = 'none';
+                    return alert('Data Tidak Ditemukan!')
+                }
+
                 if (response.ok) {
                     return response.blob();
                 }
@@ -47,6 +59,7 @@
                 a.click();
                 a.remove();
                 window.URL.revokeObjectURL(url);
+                spinner.style.display = 'none'
                 window.location.href = '/';
             })
             .catch(error => {
