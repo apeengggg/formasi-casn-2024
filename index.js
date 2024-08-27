@@ -33,7 +33,6 @@ app.get('/scrapping-casn-formation', async (req, res) => {
             { header: 'Jabatan', key: 'jabatan_nm', width: 55 },
             { header: 'Lokasi', key: 'lokasi_nm', width: 150 },
             { header: 'Jumlah Formasi', key: 'jumlah_formasi', width: 10 },
-            { header: 'Disabilitas', key: 'disable', width: 15 },
             { header: 'Gaji Minimal', key: 'gaji_min', width: 15 },
             { header: 'Gaji Maximal', key: 'gaji_max', width: 15 },
         ];
@@ -58,7 +57,6 @@ app.get('/scrapping-casn-formation', async (req, res) => {
                     jabatan_nm: data[j].jabatan_nm,
                     lokasi_nm: data[j].lokasi_nm,
                     jumlah_formasi: data[j].jumlah_formasi,
-                    disable: data[j].disable == 1 ? 'Disabilitas' : 'Non-Disabilitas',
                     gaji_min: data[j].gaji_min,
                     gaji_max: data[j].gaji_max
                 });
